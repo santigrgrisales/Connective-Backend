@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/map")
-public class MapController {
+public class MapControllerAuth {
 @GetMapping("/view")
 @PreAuthorize("hasAnyRole('CONSULTOR','ADMIN')")
 public String verMapa() {
