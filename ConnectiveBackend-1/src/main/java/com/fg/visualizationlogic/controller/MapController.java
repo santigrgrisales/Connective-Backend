@@ -6,13 +6,14 @@ import com.fg.visualizationlogic.service.MapDataService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/archivos/{idArchivo}")
+@RequestMapping("/api/archivos2/{idArchivo}")
 public class MapController {
 
     private static final Logger log = LoggerFactory.getLogger(MapController.class);
@@ -35,6 +36,7 @@ public class MapController {
      * - onlyBarreraCosto (true/false)
      */
     @GetMapping("/map")
+    @PreAuthorize("hasAnyRole('CONSULTOR','ADMIN')")
     public ResponseEntity<List<RegionMetricsDto>> getMap(
             @PathVariable("idArchivo") Long idArchivo,
             @RequestParam Map<String, String> allRequestParams
