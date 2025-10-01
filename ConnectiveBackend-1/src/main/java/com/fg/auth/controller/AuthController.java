@@ -11,6 +11,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 @RestController
+@CrossOrigin(origins = "http://localhost:5500") // ajusta el puerto/origen donde sirves tu HTML
 @RequestMapping("/api/auth")
 public class AuthController {
 private final AuthenticationManager authenticationManager;
