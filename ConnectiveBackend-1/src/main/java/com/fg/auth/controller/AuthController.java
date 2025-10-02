@@ -13,6 +13,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
+
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -147,5 +149,58 @@ public class AuthController {
         body.put("token", token);
         body.put("user", userMap);
         return body;
+    }
+    
+    @GetMapping("/me")
+    public ResponseEntity<?> me(Authentication authentication) {
+        // 1) Validación básica: debe existir Authentication y estar autenticado
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized"));
+        }
+
+        // 2) Email del sujeto (normalmente el sub/username)
+        String email = authentication.getName();
+        if (email == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized - no email"));
+        }
+
+        // 3) Buscar entidad User en BD (usa tu userRepository que ya inyectaste en el controller)
+        Optional<User> optionalUser = Optional.empty();
+        try {
+            optionalUser = userRepository.findByEmail(email);
+        } catch (Exception e) {
+            // si por alguna razón falla la consulta, devolvemos 500 (o el manejo que prefieras)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error reading user from DB"));
+        }
+
+        if (optionalUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "User not found"));
+        }
+
+        User user = optionalUser.get();
+
+        // 4) Extraer roles desde Authentication (preferible)
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        // 5) Construir el objeto de respuesta con los campos útiles
+        Map<String, Object> userMap = new HashMap<>();
+        userMap.put("id", user.getId());
+        userMap.put("email", user.getEmail());
+
+        // fullname: ajusta el getter si tu entidad tiene getFullName() en lugar de getFullname()
+        try {
+            userMap.put("fullname", user.getFullName());
+        } catch (Exception ignore) { /* si no existe, se omite */ }
+
+        userMap.put("enabled", user.isEnabled());
+        userMap.put("roles", roles);
+
+        return ResponseEntity.ok(userMap);
     }
 }
