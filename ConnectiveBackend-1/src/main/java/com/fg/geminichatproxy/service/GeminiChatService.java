@@ -89,4 +89,11 @@ public class GeminiChatService {
         if (sb.length() == 0) return "Contexto no detallado.";
         return sb.toString();
     }
+    
+    
+    
+    
 }
+
+
+

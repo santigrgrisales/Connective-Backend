@@ -210,6 +210,29 @@ public class CsvImportService {
 
         return result;
     }
+    
+    @Transactional
+    public boolean deleteArchivo(Long idArchivo) {
+        log.info("Eliminando archivo con id_archivo={}", idArchivo);
+        try {
+            // 1. Eliminar dependencias
+            int hogaresEliminados = jdbcTemplate.update("DELETE FROM hogares WHERE id_archivo = ?", idArchivo);
+            int aggregatesEliminados = jdbcTemplate.update("DELETE FROM region_aggregates WHERE id_archivo = ?", idArchivo);
+
+            // 2. Eliminar registro principal
+            int archivoEliminado = jdbcTemplate.update("DELETE FROM archivos WHERE id_archivo = ?", idArchivo);
+
+            log.info("Archivo eliminado: id={}, hogares={}, aggregates={}, archivo={}", 
+                     idArchivo, hogaresEliminados, aggregatesEliminados, archivoEliminado);
+
+            // Si al menos el registro principal se eliminó, retornamos true
+            return archivoEliminado > 0;
+        } catch (Exception e) {
+            log.error("Error al eliminar archivo {}: {}", idArchivo, e.getMessage(), e);
+            throw e; // rollback automático por @Transactional
+        }
+    }
+
 
     private int executeBatchInsert(String insertSql, List<Map<String,Object>> rows) {
         if (rows.isEmpty()) return 0;

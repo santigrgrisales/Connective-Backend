@@ -5,6 +5,7 @@ import com.fg.importcsv.service.CsvImportService.ImportResult;
 import com.fg.auth.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -84,10 +85,30 @@ public class CsvImportController {
             return ResponseEntity.status(500).body(null);
         }
     }
+    
+    @DeleteMapping("/{idArchivo}")
+    public ResponseEntity<?> eliminarArchivo(@PathVariable Long idArchivo) {
+        try {
+            boolean eliminado = csvImportService.deleteArchivo(idArchivo);
+            if (eliminado) {
+                return ResponseEntity.ok(Map.of(
+                    "message", "Archivo eliminado correctamente",
+                    "idArchivo", idArchivo
+                ));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Archivo no encontrado"));
+            }
+        } catch (Exception e) {
+            log.error("Error al eliminar archivo: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno al eliminar el archivo"));
+        }
+    }
+
 
     @GetMapping("/ping")
     public String ping() {
         return "pong";
     }
 }
-
