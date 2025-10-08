@@ -37,6 +37,7 @@ public class SecurityConfig {
             .requestMatchers("/api/auth/**").permitAll()
             .requestMatchers("/api/map/**").hasAnyRole("CONSULTOR","ADMIN")
             .requestMatchers("/api/data/upload").hasRole("ADMIN")
+            .requestMatchers("/apiGpt/chat/**").hasAnyRole("ADMIN", "CONSULTOR") // o el rol que necesites
             .anyRequest().authenticated()
             .and()
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
